@@ -17,7 +17,7 @@ class Board extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      squares: Array(props.numSquares).fill(null),
+      squares: Array(props.dimension * props.dimension).fill(null),
     };
   }
 
@@ -31,12 +31,12 @@ class Board extends React.Component {
   }
 
   render() {
-    const dimension = Math.sqrt(this.props.numSquares) + 1;
+    const dimension = this.props.dimension;
     let board = []
     let id = 0;
-    for(let c = 1; c < dimension; c++){
+    for(let c = 1; c <= dimension; c++){
       let row = [];
-      for (let r = 1; r < dimension; r++){
+      for (let r = 1; r <= dimension; r++){
         row.push(this.renderSquare(id++));
       }
       board.push(<div className="board-row">{row}</div>);
@@ -56,7 +56,7 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [],
-      numSquares: 16
+      dimension: 4 // number of squares per side
     };
   }
 
@@ -82,7 +82,7 @@ class Game extends React.Component {
   }
 
   _buildHistory(history){
-    const current = Array(this.state.numSquares).fill(null);
+    const current = Array(this.state.dimension * this.state.dimension).fill(null);
     
     for(let i = 0; i < history.length; i++){
       current[history[i].square] = history[i].place;
@@ -93,6 +93,7 @@ class Game extends React.Component {
 
   render() {
     const history = this.state.history;
+    const maxMoves = this.state.dimension * this.state.dimension;
     const current = this._buildHistory(history);
     const winner = calculateWinner(current);
 
@@ -110,7 +111,7 @@ class Game extends React.Component {
     let status;
     if (winner) {
       status = 'Winner: ' + winner;
-    }else if (history.length >= this.state.numSquares){
+    }else if (history.length >= maxMoves){
       status = 'It\'s a Draw!';
     }else {
       status = 'Next player: ' + (history.length % 2 === 0 ? 'X' : 'O');
@@ -121,7 +122,7 @@ class Game extends React.Component {
         <div className="game-board">
           <Board
             squares={current}
-            numSquares={this.state.numSquares}
+            dimension={this.state.dimension}
             onClick={(i) => this.handleClick(i)} />
         </div>
         <div className="game-info">

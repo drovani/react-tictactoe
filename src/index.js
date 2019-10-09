@@ -56,7 +56,7 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [],
-      numSquares: 9
+      numSquares: 16
     };
   }
 
@@ -82,7 +82,7 @@ class Game extends React.Component {
   }
 
   _buildHistory(history){
-    const current = Array(this.numSquares).fill(null);
+    const current = Array(this.state.numSquares).fill(null);
     
     for(let i = 0; i < history.length; i++){
       current[history[i].square] = history[i].place;
@@ -134,22 +134,41 @@ class Game extends React.Component {
 }
 
 function calculateWinner(squares){
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for(let i = 0; i < lines.length; i++){
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]){
-      return squares[a];
+  const dimension = Math.sqrt(squares.length);
+
+  // check each row
+  for(let row = 0; row < dimension; row++){
+    const cells = squares.slice(row * dimension, (row * dimension) + dimension);
+    if (cells[0] && cells.every(v => v === cells[0])){
+      return cells[0];
     }
   }
+
+  // check each column
+  for (let col = 0; col < dimension; col++){
+    const cells = squares.filter((element, index) => {
+      return index % dimension === col;
+    });
+    if (cells[0] && cells.every(v => v === cells[0])){
+      return cells[0];
+    }
+  }
+
+  // check both diagonals
+  const ltor = squares.filter((e, i) => {
+      return i % (dimension + 1) === 0;
+  });
+  if (ltor[0] && ltor.every(v => v === ltor[0])){
+    return ltor[0];
+  }
+
+  const rtol = squares.filter((e, i) => {
+    return i % (dimension - 1) === 0 && i > 0 && i < squares.length - 1;
+  })
+  if (rtol[0] && rtol.every(v => v === rtol[0])){
+    return rtol[0];
+  }
+
   return null;
 }
 

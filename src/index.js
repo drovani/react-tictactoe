@@ -8,7 +8,7 @@ function Square(props) {
       className="square"
       onClick={props.onClick}
     >
-      {props.value}
+      {props.i}
     </button>
   );
 }
@@ -26,6 +26,7 @@ class Board extends React.Component {
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
+        i={i}
       />
     );
   }
@@ -136,6 +137,16 @@ class Game extends React.Component {
 
 function calculateWinner(squares) {
   const dimension = Math.sqrt(squares.length);
+  let winningConditions = new Array(dimension * 2 + 2);
+
+  for (let row = 0; row < dimension; row++) {
+    winningConditions[row] = Array.from({ length: dimension }, (e, i) => i + (row * dimension));
+  }
+  for (let col = 0; col < dimension; col++) {
+    winningConditions[dimension + col] = Array.from({ length: dimension }, (e, i) => col + (i * dimension));
+  }
+
+  console.debug(winningConditions);
 
   // check each row
   for (let row = 0; row < dimension; row++) {

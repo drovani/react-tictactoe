@@ -10,3 +10,4 @@ This started with the [React Tutorial](https://reactjs.org/tutorial/tutorial.htm
 1. Allow for arbitrary dimensions instead of just a 3x3 board.
 1. Determine win condition formulaically instead of hardcoded states.
 1. Added display of coordinates in the Undo buttons
+1. Highlight the squares that triggered a win condition.

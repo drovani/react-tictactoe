@@ -5,10 +5,10 @@ import './index.css';
 function Square(props) {
   return (
     <button
-      className="square"
+      className={'square ' + props.winning} 
       onClick={props.onClick}
     >
-      {props.i}
+      {props.value}
     </button>
   );
 }
@@ -21,11 +21,12 @@ class Board extends React.Component {
     };
   }
 
-  renderSquare(i) {
+  renderSquare(i, isWinner) {
     return (
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
+        winning = {isWinner ? 'winning' : ''}
         i={i}
       />
     );
@@ -33,14 +34,17 @@ class Board extends React.Component {
 
   render() {
     const dimension = this.props.dimension;
-    let board = []
+    const winner = this.props.winner || [];
+
+    let board = new Array(dimension);
     let id = 0;
-    for (let c = 1; c <= dimension; c++) {
-      let row = [];
-      for (let r = 1; r <= dimension; r++) {
-        row.push(this.renderSquare(id++));
+    for (let c = 0; c < dimension; c++) {
+      let row = new Array(dimension);
+      for (let r = 0; r < dimension; r++) {
+        const currid = id++;
+        row[r] = this.renderSquare(currid, winner.some(v => v === currid));
       }
-      board.push(<div className="board-row">{row}</div>);
+      board[c] = <div className="board-row">{row}</div>;
     }
 
 
@@ -57,14 +61,15 @@ class Game extends React.Component {
     super(props);
     this.state = {
       history: [],
-      dimension: 4 // number of squares per side
+      dimension: 3 // number of squares per side
     };
+    this.winningConditions = getWinningConditions(this.state.dimension);
   }
 
   handleClick(i) {
     const current = this._buildHistory(this.state.history);
 
-    if (calculateWinner(current) || current[i]) {
+    if (current[i] || calculateWinner(current, this.winningConditions)) {
       return;
     }
 
@@ -96,7 +101,7 @@ class Game extends React.Component {
     const history = this.state.history;
     const maxMoves = this.state.dimension * this.state.dimension;
     const current = this._buildHistory(history);
-    const winner = calculateWinner(current);
+    const winner = calculateWinner(current, this.winningConditions);
 
     const moves = history.map((step, move) => {
       const desc = 'Undo #' + (move + 1) + ': ' + step.place + ' on (' + Math.floor((step.square / this.state.dimension) + 1) + ',' + (step.square % this.state.dimension + 1) + ')';
@@ -109,7 +114,7 @@ class Game extends React.Component {
 
     let status;
     if (winner) {
-      status = 'Winner: ' + winner;
+      status = 'Winner: ' + current[winner[0]];
     } else if (history.length === 0) {
       status = 'Player X starts';
     } else if (history.length >= maxMoves) {
@@ -124,7 +129,8 @@ class Game extends React.Component {
           <Board
             squares={current}
             dimension={this.state.dimension}
-            onClick={(i) => this.handleClick(i)} />
+            onClick={(i) => this.handleClick(i)}
+            winner={winner} />
         </div>
         <div className="game-info">
           <div>{status}</div>
@@ -135,8 +141,7 @@ class Game extends React.Component {
   }
 }
 
-function calculateWinner(squares) {
-  const dimension = Math.sqrt(squares.length);
+function getWinningConditions(dimension){
   let winningConditions = new Array(dimension * 2 + 2);
 
   for (let row = 0; row < dimension; row++) {
@@ -145,40 +150,18 @@ function calculateWinner(squares) {
   for (let col = 0; col < dimension; col++) {
     winningConditions[dimension + col] = Array.from({ length: dimension }, (e, i) => col + (i * dimension));
   }
+  winningConditions[dimension * 2] = Array.from({ length: dimension }, (e, i) => i * (dimension + 1));
+  winningConditions[dimension * 2 + 1] = Array.from({ length: dimension }, (e, i) => (i + 1) * (dimension - 1));
 
-  console.debug(winningConditions);
+  return winningConditions;
+}
 
-  // check each row
-  for (let row = 0; row < dimension; row++) {
-    const cells = squares.slice(row * dimension, (row * dimension) + dimension);
-    if (cells[0] && cells.every(v => v === cells[0])) {
-      return cells[0];
+function calculateWinner(squares, winningConditions) {
+  for (let ix = 0; ix < winningConditions.length; ix++) {
+    const win = winningConditions[ix];
+    if (squares[win[0]] && win.every(val => squares[win[0]] === squares[val])) {
+      return win;
     }
-  }
-
-  // check each column
-  for (let col = 0; col < dimension; col++) {
-    const cells = squares.filter((element, index) => {
-      return index % dimension === col;
-    });
-    if (cells[0] && cells.every(v => v === cells[0])) {
-      return cells[0];
-    }
-  }
-
-  // check both diagonals
-  const ltor = squares.filter((e, i) => {
-    return i % (dimension + 1) === 0;
-  });
-  if (ltor[0] && ltor.every(v => v === ltor[0])) {
-    return ltor[0];
-  }
-
-  const rtol = squares.filter((e, i) => {
-    return i % (dimension - 1) === 0 && i > 0 && i < squares.length - 1;
-  })
-  if (rtol[0] && rtol.every(v => v === rtol[0])) {
-    return rtol[0];
   }
 
   return null;

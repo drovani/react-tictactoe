@@ -6,13 +6,10 @@ body {
   ol, ul {
     padding-left: 30px;
   }
-<<<<<<< HEAD
-=======
 
   ol.nolist, ul.nolist {
     list-style: none;
   }
->>>>>>> history-as-events
   
   .board-row:after {
     clear: both;
@@ -38,13 +35,10 @@ body {
     text-align: center;
     width: 34px;
   }
-<<<<<<< HEAD
-=======
 
   .winning {
     background: greenyellow;
   }
->>>>>>> history-as-events
   
   .square:focus {
     outline: none;
